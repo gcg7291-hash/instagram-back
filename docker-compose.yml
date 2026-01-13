@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:8
+    container_name: insta-mysql
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: instagram
+      MYSQL_USER: insta
+      MYSQL_PASSWORD: insta-pw
+    ports:
+      - "3300:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  api:
+    build: .
+    container_name: insta-api
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      MYSQL_USER: insta
+      MYSQL_PASSWORD: insta-pw
+      KAKAO_CLIENT_ID: 1234asdf
+      KAKAO_CLIENT_SECRET: 1234asdf
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
